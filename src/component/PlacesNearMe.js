@@ -128,7 +128,7 @@ class PlacesNearMe extends Component {
     console.log("handleRequestByLocation Called");
     console.log(currentLocation);
     const res = await axios.get(
-      `/maps/api/geocode/json?latlng=${currentLocation.lat},${
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLocation.lat},${
         currentLocation.lng
       }&key=${API_KEY}`
     );
@@ -139,7 +139,7 @@ class PlacesNearMe extends Component {
         loading: true
       });
     const nearPlaces = await axios.get(
-      `/maps/api/place/nearbysearch/json?location=${currentLocation.lat},${
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${currentLocation.lat},${
         currentLocation.lng
       }&rankby=distance&key=${API_KEY}`
     );
