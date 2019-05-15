@@ -530,7 +530,7 @@ class PlacesNearMe extends Component {
             ) : (
               <div
                 className="spinner-border text-primary"
-                style={{ marginTop: "10rem", height: "9rem", width: "9rem" }}
+                style={{ marginTop: "9rem", height: "9rem", width: "9rem" }}
                 role="status"
               >
                 <span className="sr-only">Loading...</span>
@@ -556,7 +556,7 @@ class PlacesNearMe extends Component {
             ) : (
               <div
                 className="spinner-border text-primary"
-                style={{ marginTop: "10rem", height: "9rem", width: "9rem" }}
+                style={{ marginTop: "9rem", height: "9rem", width: "9rem" }}
                 role="status"
               >
                 <span className="sr-only">Loading...</span>
@@ -582,7 +582,7 @@ class PlacesNearMe extends Component {
             ) : (
               <div
                 className="spinner-border text-primary"
-                style={{ marginTop: "10rem", height: "9rem", width: "9rem" }}
+                style={{ marginTop: "9rem", height: "9rem", width: "9rem" }}
                 role="status"
               >
                 <span className="sr-only">Loading...</span>
