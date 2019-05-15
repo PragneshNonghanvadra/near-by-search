@@ -44,6 +44,13 @@ class PlacesNearMe extends Component {
   };
 
   getCurrentLocation = async () => {
+    this.setState({
+      nearPlaces1: [],
+      nearPlaces2: [],
+      currentPage: 1,
+      loading: true,
+      category: ""
+    });
     // console.log("current Location");
     var currentLocation = {};
     const location = window.navigator && window.navigator.geolocation;
@@ -64,6 +71,7 @@ class PlacesNearMe extends Component {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude
           });
+          // console.log(currentLocation);
           this.setState({ currentLocation });
           this.handleRequestByLocation(currentLocation);
         })
@@ -225,12 +233,13 @@ class PlacesNearMe extends Component {
       nextPageToken = this.state.nextPageToken2;
     }
     console.log("nextPageToken", nextPageToken);
-    this.setState({ currentPage: page, loading: true });
+    this.setState({ currentPage: page });
     console.log(page);
     if (
       (page === 2 && this.state.nearPlaces1.length === 0) ||
       (page === 3 && this.state.nearPlaces2.length === 0)
     ) {
+      this.setState({ loading: true });
       if (this.state.flag === "with location") {
         const nearPlaces = await axios.get(
           `/maps/api/place/nearbysearch/json?location=${lat},${lng}&rankby=distance&type=*&pagetoken=${nextPageToken}&key=${API_KEY}`
@@ -415,10 +424,7 @@ class PlacesNearMe extends Component {
           url={`https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`}
           onLoad={this.handleScriptLoad}
         />
-        <form
-          onSubmit={this.handleRequestByName}
-          style={{ display: "flex", justifyContent: "center" }}
-        >
+        <div style={{ display: "flex", justifyContent: "center" }}>
           <abbr title="Set Current Location">
             <button
               style={{
@@ -461,10 +467,11 @@ class PlacesNearMe extends Component {
               margin: "2rem",
               marginLeft: "-2rem"
             }}
+            onClick={this.handleRequestByName}
           >
             <i className="fa fa-location-arrow fa-1x" aria-hidden="true" />
           </button>
-        </form>
+        </div>
         <form
           onSubmit={this.handleRequestByCategory}
           style={{ display: "flex", justifyContent: "center" }}
