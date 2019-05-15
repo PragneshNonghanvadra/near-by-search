@@ -167,10 +167,10 @@ class PlacesNearMe extends Component {
     console.log(query);
     // this.setState({ query });
     const res1 = await axios.get(
-      `/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=photos,formatted_address,name,rating,opening_hours,geometry,icon&key=${API_KEY}`
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=photos,formatted_address,name,rating,opening_hours,geometry,icon&key=${API_KEY}`
     );
     const res2 = await axios.get(
-      `/maps/api/place/textsearch/json?query=${query}&key=${API_KEY}`
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${API_KEY}`
     );
     var res = res1.data;
     if (res1.data.candidates && res2.data.results) {
@@ -199,7 +199,7 @@ class PlacesNearMe extends Component {
       res.candidates.length > 0
     ) {
       const nearPlaces = await axios.get(
-        `/maps/api/place/nearbysearch/json?location=${
+        `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
           res.candidates[0].geometry.location.lat
         },${
           res.candidates[0].geometry.location.lng
@@ -242,7 +242,7 @@ class PlacesNearMe extends Component {
       this.setState({ loading: true });
       if (this.state.flag === "with location") {
         const nearPlaces = await axios.get(
-          `/maps/api/place/nearbysearch/json?location=${lat},${lng}&rankby=distance&type=*&pagetoken=${nextPageToken}&key=${API_KEY}`
+          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&rankby=distance&type=*&pagetoken=${nextPageToken}&key=${API_KEY}`
         );
         if (page === 2)
           this.setState({
@@ -258,7 +258,7 @@ class PlacesNearMe extends Component {
         console.log(nearPlaces);
       } else if (this.state.flag === "without location") {
         const nearPlaces = await axios.get(
-          `/maps/api/place/textsearch/json?query=${
+          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/textsearch/json?query=${
             this.state.query
           }&pagetoken=${nextPageToken}&key=${API_KEY}`
         );
@@ -290,9 +290,9 @@ class PlacesNearMe extends Component {
     const category = encodeURIComponent(this.state.category);
     console.log(category);
     const res = await axios.get(
-      `/maps/api/place/nearbysearch/json?location=${currentLocation.lat},${
-        currentLocation.lng
-      }&radius=50000&type=${category}&key=${API_KEY}`
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
+        currentLocation.lat
+      },${currentLocation.lng}&radius=50000&type=${category}&key=${API_KEY}`
     );
     console.log(res);
     this.setState({
@@ -306,7 +306,7 @@ class PlacesNearMe extends Component {
     console.log(place.place_id);
     axios
       .get(
-        `/maps/api/place/details/json?placeid=${
+        `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?placeid=${
           place.place_id
         }&fields=name,rating,formatted_phone_number,photo,formatted_address,international_phone_number,reviews,types,url,vicinity,website&key=${API_KEY}`
       )
@@ -349,7 +349,7 @@ class PlacesNearMe extends Component {
       });
       axios
         .get(
-          `maps/api/geocode/json?address=${encodeURIComponent(
+          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
             addressObject.formatted_address
           )}&key=${API_KEY}`
         )
