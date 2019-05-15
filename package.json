@@ -3,15 +3,25 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^0.18.0",
+    "bootstrap": "^4.3.1",
+    "material-ui-search-bar": "^0.4.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-geolocated": "^2.4.1",
+    "react-lazy-load": "^3.0.13",
+    "react-lazyload": "^2.5.0",
+    "react-load-script": "0.0.6",
+    "react-places-autocomplete": "^7.2.1",
     "react-scripts": "3.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "dev": "react-scripts start",
+    "start": "serve -s build",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "heroku-postbuild": "npm run build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -27,5 +37,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "proxy": "https://maps.googleapis.com"
 }

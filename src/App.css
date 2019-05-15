@@ -1,33 +1,57 @@
-.App {
-  text-align: center;
+body {
+  background-image: linear-gradient(
+    -90deg,
+    rgb(185, 191, 190),
+    rgb(164, 216, 216)
+  );
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.place {
+  margin: 10px;
+  width: 300px;
+  height: 300px;
+  background-color: rgb(52, 119, 226);
   color: white;
+  padding-top: 8rem;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+  border-radius: 20px;
+}
+.place:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+  background-color: rgb(29, 1, 89);
 }
 
-.App-link {
-  color: #61dafb;
+.location-img:hover {
+  cursor: pointer;
+}
+.tooltip {
+  position: relative;
+  display: inline-block;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  cursor: pointer;
+}
+
+.icon:hover {
+  cursor: pointer;
 }
