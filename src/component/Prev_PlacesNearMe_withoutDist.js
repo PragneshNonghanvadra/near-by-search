@@ -33,9 +33,7 @@ class PlacesNearMe extends Component {
       currentPage: 1,
       city: "",
       loading: true,
-      locationErr: "",
-      locOrCategoryChanged: true,
-      isPageShowable: false
+      locationErr: ""
     };
   }
 
@@ -130,29 +128,27 @@ class PlacesNearMe extends Component {
     console.log("handleRequestByLocation Called");
     console.log(currentLocation);
     const res = await axios.get(
-      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/geocode/json?latlng=${
-        currentLocation.lat
-      },${currentLocation.lng}&key=${API_KEY}`
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLocation.lat},${
+        currentLocation.lng
+      }&key=${API_KEY}`
     );
     if (res.data.results.length > 0)
       this.setState({
         query: res.data.results[0].formatted_address,
         currentLocation: currentLocation,
-        loading: true,
-        isPageShowable: false
+        loading: true
       });
     const nearPlaces = await axios.get(
-      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
-        currentLocation.lat
-      },${currentLocation.lng}&rankby=distance&key=${API_KEY}`
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${currentLocation.lat},${
+        currentLocation.lng
+      }&rankby=distance&key=${API_KEY}`
     );
     if (nearPlaces.data && nearPlaces.data.results)
       this.setState({
         nearPlaces: nearPlaces.data.results,
         nextPageToken1: nearPlaces.data.next_page_token,
         flag: "with location",
-        loading: false,
-        isPageShowable: false
+        loading: false
       });
     console.log("initial", nearPlaces);
     console.log(res);
@@ -165,11 +161,7 @@ class PlacesNearMe extends Component {
       nearPlaces2: [],
       currentPage: 1,
       loading: true,
-      category: "",
-      nextPageToken1: "",
-      nextPageToken2: "",
-      flag: "",
-      isPageShowable: false
+      category: ""
     });
     const query = encodeURIComponent(this.state.query);
     console.log(query);
@@ -187,24 +179,13 @@ class PlacesNearMe extends Component {
         if (res.next_page_token)
           this.setState({
             nextPageToken1: res.next_page_token,
-            flag: "without location",
-            locOrCategoryChanged: true,
-            isPageShowable: false
+            flag: "without location"
           });
         this.setState({ nearPlaces: res.results, loading: false });
       } else {
         if (res.next_page_token)
-          this.setState({
-            nextPageToken1: res.next_page_token,
-            locOrCategoryChanged: true,
-            isPageShowable: false
-          });
-        this.setState({
-          nearPlaces: res.candidates,
-          loading: false,
-          locOrCategoryChanged: true,
-          isPageShowable: false
-        });
+          this.setState({ nextPageToken1: res.next_page_token });
+        this.setState({ nearPlaces: res.candidates, loading: false });
       }
       console.log("res ", res);
     }
@@ -232,16 +213,9 @@ class PlacesNearMe extends Component {
             currentLocation: {
               lat: res.candidates[0].geometry.location.lat,
               lng: res.candidates[0].geometry.location.lng
-            },
-            locOrCategoryChanged: true,
-            isPageShowable: false
+            }
           });
-        this.setState({
-          nearPlaces: nearPlaces.data.results,
-          loading: false,
-          locOrCategoryChanged: true,
-          isPageShowable: false
-        });
+        this.setState({ nearPlaces: nearPlaces.data.results, loading: false });
       }
       console.log("Token", nearPlaces.data.next_page_token);
       // console.log(nearPlaces.data.results);
@@ -259,10 +233,7 @@ class PlacesNearMe extends Component {
       nextPageToken = this.state.nextPageToken2;
     }
     console.log("nextPageToken", nextPageToken);
-    this.setState({
-      currentPage: page,
-      locOrCategoryChanged: false
-    });
+    this.setState({ currentPage: page });
     console.log(page);
     if (
       (page === 2 && this.state.nearPlaces1.length === 0) ||
@@ -277,16 +248,12 @@ class PlacesNearMe extends Component {
           this.setState({
             nearPlaces1: nearPlaces.data.results,
             nextPageToken2: nearPlaces.data.next_page_token,
-            loading: false,
-            locOrCategoryChanged: true,
-            isPageShowable: false
+            loading: false
           });
         else if (page === 3)
           this.setState({
             nearPlaces2: nearPlaces.data.results,
-            loading: false,
-            locOrCategoryChanged: true,
-            isPageShowable: false
+            loading: false
           });
         console.log(nearPlaces);
       } else if (this.state.flag === "without location") {
@@ -299,16 +266,12 @@ class PlacesNearMe extends Component {
           this.setState({
             nearPlaces1: nearPlaces.data.results,
             nextPageToken2: nearPlaces.data.next_page_token,
-            loading: false,
-            locOrCategoryChanged: true,
-            isPageShowable: false
+            loading: false
           });
         else if (page === 3)
           this.setState({
             nearPlaces2: nearPlaces.data.results,
-            loading: false,
-            locOrCategoryChanged: true,
-            isPageShowable: false
+            loading: false
           });
       }
     }
@@ -321,8 +284,7 @@ class PlacesNearMe extends Component {
       nearPlaces1: [],
       nearPlaces2: [],
       currentPage: 1,
-      loading: true,
-      isPageShowable: false
+      loading: true
     });
     const currentLocation = this.state.currentLocation;
     const category = encodeURIComponent(this.state.category);
@@ -336,8 +298,7 @@ class PlacesNearMe extends Component {
     this.setState({
       nearPlaces: res.data.results,
       nextPageToken1: res.data.next_page_token,
-      loading: false,
-      locOrCategoryChanged: true
+      loading: false
     });
   };
 
@@ -351,11 +312,7 @@ class PlacesNearMe extends Component {
       )
       .then(res => {
         console.log(res);
-        return this.setState({
-          currentPlaceDetail: res,
-          loading: false,
-          locOrCategoryChanged: false
-        });
+        return this.setState({ currentPlaceDetail: res, loading: false });
       })
       .catch(err => console.log("Error in Finding Place Detail"));
   };
@@ -400,8 +357,7 @@ class PlacesNearMe extends Component {
           this.setState({
             currentLocation: {
               lat: res.data.results[0].geometry.location.lat,
-              lng: res.data.results[0].geometry.location.lng,
-              locOrCategoryChanged: false
+              lng: res.data.results[0].geometry.location.lng
             }
           })
         );
@@ -409,139 +365,54 @@ class PlacesNearMe extends Component {
   };
 
   render() {
-    if (this.state.currentPage === 1 && this.state.locOrCategoryChanged) {
-      this.nearPlaces = this.state.nearPlaces.map(async (place, i) => {
-        const dist = await axios.get(
-          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
-            this.state.currentLocation.lat
-          },${this.state.currentLocation.lng}&destinations=${
-            place.geometry.location.lat
-          },${place.geometry.location.lng}&key=${API_KEY}`
-        );
-
-        // console.log("dist", dist);
-
-        return (
-          <div
-            key={i}
-            onClick={() => this.getDetailedPlace(place)}
-            data-toggle="modal"
-            data-target="#exampleModalCenter"
-            className="place"
-          >
-            <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
-              <img src={place.icon} alt={"No icon Available"} />
-            </div>
-            <div>
-              <span>{place.name}</span>
-            </div>
-            <div style={{ marginTop: "1.5rem" }}>
-              <span>
-                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
-                {dist.data.rows[0].elements[0].distance.text}
-              </span>
-            </div>
-          </div>
-        );
-      });
-      if (this.nearPlaces.length > 0) {
-        Promise.all(this.nearPlaces).then(values => {
-          this.nearPlaces = values;
-          this.setState({ isPageShowable: true, locOrCategoryChanged: false });
-          console.log("values", values);
-
-          console.log("this.nearPlace", this.nearPlaces);
-        });
-      }
-      console.log("this.nearPlace", this.nearPlaces, this.state.isPageShowable);
-    }
-    if (this.state.currentPage === 2 && this.state.locOrCategoryChanged) {
-      this.nearPlaces1 = this.state.nearPlaces1.map(async (place, i) => {
-        const dist = await axios.get(
-          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
-            this.state.currentLocation.lat
-          },${this.state.currentLocation.lng}&destinations=${
-            place.geometry.location.lat
-          },${place.geometry.location.lng}&key=${API_KEY}`
-        );
-
-        return (
-          <div
-            key={i}
-            onClick={() => this.getDetailedPlace(place)}
-            data-toggle="modal"
-            data-target="#exampleModalCenter"
-            className="place"
-          >
-            <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
-              <img src={place.icon} alt={"No icon Available"} />
-            </div>
-            <div>
-              <span>{place.name}</span>
-            </div>
-            <div style={{ marginTop: "1.5rem" }}>
-              <span>
-                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
-                {dist.data.rows[0].elements[0].distance.text}
-              </span>
-            </div>
-          </div>
-        );
-      });
-      if (this.nearPlaces1.length > 0) {
-        Promise.all(this.nearPlaces1).then(values => {
-          this.nearPlaces1 = values;
-          this.setState({ isPageShowable: true, locOrCategoryChanged: false });
-          // console.log("values", values);
-
-          // console.log("this.nearPlace", this.nearPlaces);
-        });
-      }
-      // console.log("nearPlace1", this.nearPlaces1);
-    }
-    if (this.state.currentPage === 3 && this.state.locOrCategoryChanged) {
-      this.nearPlaces2 = this.state.nearPlaces2.map(async (place, i) => {
-        const dist = await axios.get(
-          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
-            this.state.currentLocation.lat
-          },${this.state.currentLocation.lng}&destinations=${
-            place.geometry.location.lat
-          },${place.geometry.location.lng}&key=${API_KEY}`
-        );
-
-        return (
-          <div
-            key={i}
-            onClick={() => this.getDetailedPlace(place)}
-            data-toggle="modal"
-            data-target="#exampleModalCenter"
-            className="place"
-          >
-            <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
-              <img src={place.icon} alt={"No icon Available"} />
-            </div>
-            <div>
-              <span>{place.name}</span>
-            </div>
-            <div style={{ marginTop: "1.5rem" }}>
-              <span>
-                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
-                {dist.data.rows[0].elements[0].distance.text}
-              </span>
-            </div>
-          </div>
-        );
-      });
-      if (this.nearPlaces2.length > 0) {
-        Promise.all(this.nearPlaces2).then(values => {
-          this.nearPlaces2 = values;
-          this.setState({ isPageShowable: true, locOrCategoryChanged: false });
-          // console.log("values", values);
-
-          // console.log("this.nearPlace", this.nearPlaces);
-        });
-      }
-    }
+    const nearPlaces = this.state.nearPlaces.map((place, i) => (
+      <div
+        key={i}
+        onClick={() => this.getDetailedPlace(place)}
+        data-toggle="modal"
+        data-target="#exampleModalCenter"
+        className="place"
+      >
+        <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
+          <img src={place.icon} alt={"No icon Available"} />
+        </div>
+        <div>
+          <span>{place.name}</span>
+        </div>
+      </div>
+    ));
+    const nearPlaces1 = this.state.nearPlaces1.map((place, i) => (
+      <div
+        key={i}
+        onClick={() => this.getDetailedPlace(place)}
+        data-toggle="modal"
+        data-target="#exampleModalCenter"
+        className="place"
+      >
+        <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
+          <img src={place.icon} alt={"No icon Available"} />
+        </div>
+        <div>
+          <span>{place.name}</span>
+        </div>
+      </div>
+    ));
+    const nearPlaces2 = this.state.nearPlaces2.map((place, i) => (
+      <div
+        key={i}
+        onClick={() => this.getDetailedPlace(place)}
+        data-toggle="modal"
+        data-target="#exampleModalCenter"
+        className="place"
+      >
+        <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
+          <img src={place.icon} alt={"No icon Available"} />
+        </div>
+        <div>
+          <span>{place.name}</span>
+        </div>
+      </div>
+    ));
     return (
       <div>
         <h3
@@ -597,7 +468,6 @@ class PlacesNearMe extends Component {
               marginLeft: "-2rem"
             }}
             onClick={this.handleRequestByName}
-            disabled={this.state.query.length === 0}
           >
             <i className="fa fa-location-arrow fa-1x" aria-hidden="true" />
           </button>
@@ -618,31 +488,22 @@ class PlacesNearMe extends Component {
           <button
             className="btn btn-primary"
             style={{ margin: "2rem", marginLeft: "-2rem" }}
-            disabled={this.state.category.length === 0}
           >
             {" "}
             <i className="fa fa-search" />{" "}
           </button>
         </form>
-        {this.state.nearPlaces.length !== 0 && this.state.isPageShowable ? (
+        {this.state.nearPlaces.length !== 0 ? (
           <div
             style={{
               display: "flex",
               justifyContent: "center",
-              flexWrap: "wrap",
-              backgroundColor: "rgb(2, 47, 119)",
-              marginLeft: "2.5rem",
-              marginRight: "2.5rem",
-              borderRadius: "10px",
-              marginBottom: "3.5rem",
-              marginTop: "4rem"
+              flexWrap: "wrap"
             }}
           >
-            {/* <button
+            <button
               className="btn btn-light"
-              onClick={() =>
-                this.setState({ currentPage: 1, locOrCategoryChanged: false })
-              }
+              onClick={() => this.setState({ currentPage: 1 })}
             >
               1
             </button>
@@ -657,34 +518,12 @@ class PlacesNearMe extends Component {
               onClick={() => this.handleNextPage(3)}
             >
               3
-            </button> */}
-            <button
-              className="btn btn-light"
-              onClick={() => {
-                if (this.state.currentPage > 1)
-                  this.handleNextPage(this.state.currentPage - 1);
-              }}
-              style={{ marginRight: "5rem" }}
-              disabled={this.state.currentPage === 1}
-            >
-              Prev
-            </button>
-            <button
-              className="btn btn-light"
-              onClick={() => {
-                if (this.state.currentPage < 3)
-                  this.handleNextPage(this.state.currentPage + 1);
-              }}
-              style={{ marginLeft: "5rem" }}
-              disabled={this.state.currentPage === 3}
-            >
-              Next
             </button>
           </div>
         ) : (
           <div> </div>
         )}
-        {this.state.currentPage === 1 && this.state.isPageShowable ? (
+        {this.state.currentPage === 1 ? (
           <div
             style={{
               display: "flex",
@@ -692,8 +531,9 @@ class PlacesNearMe extends Component {
               flexWrap: "wrap"
             }}
           >
-            {!this.state.loading && this.state.isPageShowable ? (
-              this.nearPlaces
+            {/* {this.state.currentPage} */}
+            {!this.state.loading ? (
+              nearPlaces
             ) : (
               <div
                 className="spinner-border text-primary"
@@ -704,7 +544,7 @@ class PlacesNearMe extends Component {
               </div>
             )}
           </div>
-        ) : this.state.currentPage === 2 && this.state.isPageShowable ? (
+        ) : this.state.currentPage === 2 ? (
           <div
             style={{
               display: "flex",
@@ -718,8 +558,8 @@ class PlacesNearMe extends Component {
             ) : (
               <div>greater than 0</div>
             )} */}
-            {!this.state.loading && this.state.isPageShowable ? (
-              this.nearPlaces1
+            {!this.state.loading ? (
+              nearPlaces1
             ) : (
               <div
                 className="spinner-border text-primary"
@@ -744,8 +584,8 @@ class PlacesNearMe extends Component {
             ) : (
               <div>greater than 0</div>
             )} */}
-            {!this.state.loading && this.state.isPageShowable ? (
-              this.nearPlaces2
+            {!this.state.loading ? (
+              nearPlaces2
             ) : (
               <div
                 className="spinner-border text-primary"
@@ -775,11 +615,11 @@ class PlacesNearMe extends Component {
                 <h5 className="modal-title" id="exampleModalLongTitle">
                   {this.state.currentPlaceDetail !== null &&
                   this.state.currentPlaceDetail.data.result ? (
-                    <span style={{ fontWeight: "bold" }}>
+                    <span>
                       {this.state.currentPlaceDetail.data.result.name}
                     </span>
                   ) : (
-                    <span />
+                    <span>Loading...</span>
                   )}
                 </h5>
                 <button
@@ -794,114 +634,91 @@ class PlacesNearMe extends Component {
               <div className="modal-body">
                 <div>
                   {" "}
+                  Phone No:&nbsp;{" "}
                   {this.state.currentPlaceDetail !== null &&
-                  this.state.currentPlaceDetail.data.result &&
-                  this.state.currentPlaceDetail.data.result
-                    .formatted_phone_number ? (
+                  this.state.currentPlaceDetail.data.result ? (
                     <span>
-                      <span style={{ fontWeight: "bold" }}>
-                        Phone No:&nbsp;
-                      </span>
                       {
                         this.state.currentPlaceDetail.data.result
                           .formatted_phone_number
                       }
                     </span>
                   ) : (
-                    <span />
+                    <span>Loading...</span>
                   )}
                 </div>
                 <div>
                   {" "}
+                  International Phone No:&nbsp;{" "}
                   {this.state.currentPlaceDetail !== null &&
-                  this.state.currentPlaceDetail.data.result &&
-                  this.state.currentPlaceDetail.data.result
-                    .international_phone_number ? (
+                  this.state.currentPlaceDetail.data.result ? (
                     <span>
-                      <span style={{ fontWeight: "bold" }}>
-                        International Phone No:&nbsp;
-                      </span>
                       {
                         this.state.currentPlaceDetail.data.result
                           .international_phone_number
                       }
                     </span>
                   ) : (
-                    <span />
+                    <span>Loading...</span>
                   )}
                 </div>
                 <div>
                   {" "}
+                  Rating:&nbsp;
                   {this.state.currentPlaceDetail !== null &&
-                  this.state.currentPlaceDetail.data.result &&
-                  this.state.currentPlaceDetail.data.result.rating ? (
+                  this.state.currentPlaceDetail.data.result ? (
                     <span>
-                      <span style={{ fontWeight: "bold" }}>Rating:&nbsp;</span>
                       {this.state.currentPlaceDetail.data.result.rating}
                     </span>
                   ) : (
-                    <span />
+                    <span>Loading...</span>
                   )}
                 </div>
                 <div>
                   {" "}
+                  Address:&nbsp;
                   {this.state.currentPlaceDetail !== null &&
-                  this.state.currentPlaceDetail.data.result &&
-                  this.state.currentPlaceDetail.data.result
-                    .formatted_address ? (
+                  this.state.currentPlaceDetail.data.result ? (
                     <span>
-                      <span style={{ fontWeight: "bold" }}>Address:&nbsp;</span>
                       {
                         this.state.currentPlaceDetail.data.result
                           .formatted_address
                       }
                     </span>
                   ) : (
-                    <span />
+                    <span>Loading...</span>
                   )}
                 </div>
                 <div>
                   {" "}
+                  Google Map:&nbsp;
                   {this.state.currentPlaceDetail !== null &&
-                  this.state.currentPlaceDetail.data.result &&
-                  this.state.currentPlaceDetail.data.result.url ? (
-                    <div>
-                      <span style={{ fontWeight: "bold" }}>
-                        {" "}
-                        Google Map:&nbsp;{" "}
-                      </span>
-                      <a
-                        href={this.state.currentPlaceDetail.data.result.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Go To Google Map
-                      </a>
-                    </div>
+                  this.state.currentPlaceDetail.data.result ? (
+                    <a
+                      href={this.state.currentPlaceDetail.data.result.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Go To Google Map
+                    </a>
                   ) : (
-                    <span />
+                    <span>Loading...</span>
                   )}
                 </div>
                 <div>
                   {" "}
+                  Website:&nbsp;
                   {this.state.currentPlaceDetail !== null &&
-                  this.state.currentPlaceDetail.data.result &&
-                  this.state.currentPlaceDetail.data.result.website ? (
-                    <span>
-                      <span style={{ fontWeight: "bold" }}>
-                        {" "}
-                        Go to Website{" "}
-                      </span>
-                      <a
-                        href={this.state.currentPlaceDetail.data.result.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {this.state.currentPlaceDetail.data.result.website}
-                      </a>
-                    </span>
+                  this.state.currentPlaceDetail.data.result ? (
+                    <a
+                      href={this.state.currentPlaceDetail.data.result.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {this.state.currentPlaceDetail.data.result.website}
+                    </a>
                   ) : (
-                    <span />
+                    <span>Loading...</span>
                   )}
                 </div>
               </div>
