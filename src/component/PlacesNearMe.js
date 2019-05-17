@@ -342,7 +342,9 @@ class PlacesNearMe extends Component {
     const res = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
         currentLocation.lat
-      },${currentLocation.lng}&radius=50000&type=${category}&key=${API_KEY}`
+      },${
+        currentLocation.lng
+      }&radius=50000&type=${category}&keyword=${category}&key=${API_KEY}`
     );
     console.log(res);
     this.setState({
