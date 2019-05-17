@@ -334,7 +334,10 @@ class PlacesNearMe extends Component {
       isPageShowable: false
     });
     const currentLocation = this.state.currentLocation;
-    const category = this.state.category.split(" ").join("_");
+    const category = this.state.category
+      .split(" ")
+      .join("_")
+      .toLocaleLowerCase();
     console.log(category);
     const res = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
