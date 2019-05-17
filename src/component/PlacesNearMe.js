@@ -338,13 +338,14 @@ class PlacesNearMe extends Component {
       .split(" ")
       .join("_")
       .toLocaleLowerCase();
+    const keyword = encodeURIComponent(this.state.category.toLocaleLowerCase());
     console.log(category);
     const res = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
         currentLocation.lat
       },${
         currentLocation.lng
-      }&radius=50000&type=${category}&keyword=${category}&key=${API_KEY}`
+      }&radius=50000&type=${category}&keyword=${keyword}&key=${API_KEY}`
     );
     console.log(res);
     this.setState({
