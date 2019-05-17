@@ -139,12 +139,7 @@ class PlacesNearMe extends Component {
         query: res.data.results[0].formatted_address,
         currentLocation: currentLocation,
         loading: true,
-        isPageShowable: false,
-        locOrCategoryChanged: true,
-        currentPage: 1,
-        nearPlaces: [],
-        nearPlaces1: [],
-        nearPlaces2: []
+        isPageShowable: false
       });
     const nearPlaces = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
@@ -270,12 +265,8 @@ class PlacesNearMe extends Component {
     });
     console.log(page);
     if (
-      (page === 2 &&
-        this.state.nearPlaces1.length === 0 &&
-        this.state.nearPlaces.length === 20) ||
-      (page === 3 &&
-        this.state.nearPlaces2.length === 0 &&
-        this.state.nearPlaces1.length === 20)
+      (page === 2 && this.state.nearPlaces1.length === 0) ||
+      (page === 3 && this.state.nearPlaces2.length === 0)
     ) {
       this.setState({ loading: true });
       if (this.state.flag === "with location") {
@@ -334,7 +325,7 @@ class PlacesNearMe extends Component {
       isPageShowable: false
     });
     const currentLocation = this.state.currentLocation;
-    const category = this.state.category.split(" ").join("_");
+    const category = encodeURIComponent(this.state.category);
     console.log(category);
     const res = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
@@ -417,108 +408,139 @@ class PlacesNearMe extends Component {
     }
   };
 
-  getPlacesComponents = async nearPlaces => {
-    console.log("call to getPlacesComponents", nearPlaces);
-    // this.setState({ isPageShowable: false });
-    const locArray = await nearPlaces.map(place => {
-      return `${place.geometry.location.lat}%2C${place.geometry.location.lng}`;
-    });
-    console.log("locArray", locArray);
-    const res = await axios.get(
-      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
-        this.state.currentLocation.lat
-      }%2C${this.state.currentLocation.lng}&destinations=${locArray.join(
-        "%7C"
-      )}&key=${API_KEY}`
-    );
-    var distArray;
-    if (res.data && res.data.rows[0] && res.data.rows[0].elements) {
-      distArray = await res.data.rows[0].elements.map(data => {
-        return data.distance.text;
-      });
-    }
-    const answer = await nearPlaces.map((place, i) => {
-      // const dist = await axios.get(
-      //   `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
-      //     this.state.currentLocation.lat
-      //   },${this.state.currentLocation.lng}&destinations=${
-      //     place.geometry.location.lat
-      //   },${place.geometry.location.lng}&key=${API_KEY}`
-      // );
-
-      // console.log("dist", dist);
-
-      return (
-        <div
-          key={i}
-          onClick={() => this.getDetailedPlace(place)}
-          data-toggle="modal"
-          data-target="#exampleModalCenter"
-          className="place"
-        >
-          <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
-            <img src={place.icon} alt={"No icon Available"} />
-          </div>
-          <div>
-            <span>{place.name}</span>
-          </div>
-          <div style={{ marginTop: "1.5rem" }}>
-            <span>
-              <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
-              {/* {dist.data.rows[0].elements[0].distance.text} */}
-              {distArray[i]}
-            </span>
-          </div>
-        </div>
-      );
-    });
-    // if (this.nearPlaces.length > 0) {
-    //   Promise.all(this.nearPlaces).then(values => {
-    //     this.nearPlaces = values;
-    //     this.setState({ isPageShowable: true, locOrCategoryChanged: false });
-    //     console.log("values", values);
-
-    //     console.log("this.nearPlace", this.nearPlaces);
-    //   });
-    // }
-
-    // console.log("this.nearPlace", this.nearPlaces, this.state.isPageShowable);
-
-    console.log("done", answer);
-    return answer;
-  };
-
   render() {
-    if (
-      this.state.currentPage === 1 &&
-      this.state.locOrCategoryChanged &&
-      this.state.nearPlaces.length > 0
-    ) {
-      console.log("First Render", this.state.nearPlaces.length);
-      this.getPlacesComponents(this.state.nearPlaces).then(res => {
-        this.nearPlaces = res;
-        this.setState({ isPageShowable: true, locOrCategoryChanged: false });
+    if (this.state.currentPage === 1 && this.state.locOrCategoryChanged) {
+      this.nearPlaces = this.state.nearPlaces.map(async (place, i) => {
+        const dist = await axios.get(
+          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
+            this.state.currentLocation.lat
+          },${this.state.currentLocation.lng}&destinations=${
+            place.geometry.location.lat
+          },${place.geometry.location.lng}&key=${API_KEY}`
+        );
+
+        // console.log("dist", dist);
+
+        return (
+          <div
+            key={i}
+            onClick={() => this.getDetailedPlace(place)}
+            data-toggle="modal"
+            data-target="#exampleModalCenter"
+            className="place"
+          >
+            <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
+              <img src={place.icon} alt={"No icon Available"} />
+            </div>
+            <div>
+              <span>{place.name}</span>
+            </div>
+            <div style={{ marginTop: "1.5rem" }}>
+              <span>
+                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
+                {dist.data.rows[0].elements[0].distance.text}
+              </span>
+            </div>
+          </div>
+        );
       });
+      if (this.nearPlaces.length > 0) {
+        Promise.all(this.nearPlaces).then(values => {
+          this.nearPlaces = values;
+          this.setState({ isPageShowable: true, locOrCategoryChanged: false });
+          console.log("values", values);
+
+          console.log("this.nearPlace", this.nearPlaces);
+        });
+      }
+      console.log("this.nearPlace", this.nearPlaces, this.state.isPageShowable);
     }
-    if (
-      this.state.currentPage === 2 &&
-      this.state.locOrCategoryChanged &&
-      this.state.nearPlaces1.length > 0
-    ) {
-      this.getPlacesComponents(this.state.nearPlaces1).then(res => {
-        this.nearPlaces1 = res;
-        this.setState({ isPageShowable: true, locOrCategoryChanged: false });
+    if (this.state.currentPage === 2 && this.state.locOrCategoryChanged) {
+      this.nearPlaces1 = this.state.nearPlaces1.map(async (place, i) => {
+        const dist = await axios.get(
+          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
+            this.state.currentLocation.lat
+          },${this.state.currentLocation.lng}&destinations=${
+            place.geometry.location.lat
+          },${place.geometry.location.lng}&key=${API_KEY}`
+        );
+
+        return (
+          <div
+            key={i}
+            onClick={() => this.getDetailedPlace(place)}
+            data-toggle="modal"
+            data-target="#exampleModalCenter"
+            className="place"
+          >
+            <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
+              <img src={place.icon} alt={"No icon Available"} />
+            </div>
+            <div>
+              <span>{place.name}</span>
+            </div>
+            <div style={{ marginTop: "1.5rem" }}>
+              <span>
+                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
+                {dist.data.rows[0].elements[0].distance.text}
+              </span>
+            </div>
+          </div>
+        );
       });
+      if (this.nearPlaces1.length > 0) {
+        Promise.all(this.nearPlaces1).then(values => {
+          this.nearPlaces1 = values;
+          this.setState({ isPageShowable: true, locOrCategoryChanged: false });
+          // console.log("values", values);
+
+          // console.log("this.nearPlace", this.nearPlaces);
+        });
+      }
+      // console.log("nearPlace1", this.nearPlaces1);
     }
-    if (
-      this.state.currentPage === 3 &&
-      this.state.locOrCategoryChanged &&
-      this.state.nearPlaces2.length > 0
-    ) {
-      this.getPlacesComponents(this.state.nearPlaces2).then(res => {
-        this.nearPlaces2 = res;
-        this.setState({ isPageShowable: true, locOrCategoryChanged: false });
+    if (this.state.currentPage === 3 && this.state.locOrCategoryChanged) {
+      this.nearPlaces2 = this.state.nearPlaces2.map(async (place, i) => {
+        const dist = await axios.get(
+          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
+            this.state.currentLocation.lat
+          },${this.state.currentLocation.lng}&destinations=${
+            place.geometry.location.lat
+          },${place.geometry.location.lng}&key=${API_KEY}`
+        );
+
+        return (
+          <div
+            key={i}
+            onClick={() => this.getDetailedPlace(place)}
+            data-toggle="modal"
+            data-target="#exampleModalCenter"
+            className="place"
+          >
+            <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
+              <img src={place.icon} alt={"No icon Available"} />
+            </div>
+            <div>
+              <span>{place.name}</span>
+            </div>
+            <div style={{ marginTop: "1.5rem" }}>
+              <span>
+                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
+                {dist.data.rows[0].elements[0].distance.text}
+              </span>
+            </div>
+          </div>
+        );
       });
+      if (this.nearPlaces2.length > 0) {
+        Promise.all(this.nearPlaces2).then(values => {
+          this.nearPlaces2 = values;
+          this.setState({ isPageShowable: true, locOrCategoryChanged: false });
+          // console.log("values", values);
+
+          // console.log("this.nearPlace", this.nearPlaces);
+        });
+      }
     }
     return (
       <div>
@@ -602,22 +624,21 @@ class PlacesNearMe extends Component {
             <i className="fa fa-search" />{" "}
           </button>
         </form>
-        {this.state.nearPlaces.length !== 0 ? (
-          <div>
-            <hr style={{ marginTop: "2rem" }} />
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                flexWrap: "wrap",
-                marginLeft: "2.5rem",
-                marginRight: "2.5rem",
-                borderRadius: "10px",
-                marginBottom: "0.2rem",
-                marginTop: "0.2rem"
-              }}
-            >
-              {/* <button
+        {this.state.nearPlaces.length !== 0 && this.state.isPageShowable ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              backgroundColor: "rgb(2, 47, 119)",
+              marginLeft: "2.5rem",
+              marginRight: "2.5rem",
+              borderRadius: "10px",
+              marginBottom: "3.5rem",
+              marginTop: "4rem"
+            }}
+          >
+            {/* <button
               className="btn btn-light"
               onClick={() =>
                 this.setState({ currentPage: 1, locOrCategoryChanged: false })
@@ -637,35 +658,28 @@ class PlacesNearMe extends Component {
             >
               3
             </button> */}
-              <button
-                className="btn btn-light"
-                onClick={() => {
-                  if (this.state.currentPage > 1)
-                    this.handleNextPage(this.state.currentPage - 1);
-                }}
-                style={{ marginRight: "3rem", marginLeft: "-5rem" }}
-                disabled={this.state.currentPage === 1}
-              >
-                Prev
-              </button>
-              <button
-                className="btn btn-light"
-                onClick={() => {
-                  if (
-                    (this.state.currentPage === 1 &&
-                      this.state.nearPlaces.length === 20) ||
-                    (this.state.currentPage === 2 &&
-                      this.state.nearPlaces1.length === 20)
-                  )
-                    this.handleNextPage(this.state.currentPage + 1);
-                }}
-                style={{ marginLeft: "3rem", marginRight: "-5rem" }}
-                disabled={this.state.currentPage === 3}
-              >
-                Next
-              </button>
-            </div>
-            <hr style={{ marginBottom: "2rem" }} />
+            <button
+              className="btn btn-light"
+              onClick={() => {
+                if (this.state.currentPage > 1)
+                  this.handleNextPage(this.state.currentPage - 1);
+              }}
+              style={{ marginRight: "5rem" }}
+              disabled={this.state.currentPage === 1}
+            >
+              Prev
+            </button>
+            <button
+              className="btn btn-light"
+              onClick={() => {
+                if (this.state.currentPage < 3)
+                  this.handleNextPage(this.state.currentPage + 1);
+              }}
+              style={{ marginLeft: "5rem" }}
+              disabled={this.state.currentPage === 3}
+            >
+              Next
+            </button>
           </div>
         ) : (
           <div> </div>
@@ -681,28 +695,12 @@ class PlacesNearMe extends Component {
             {!this.state.loading && this.state.isPageShowable ? (
               this.nearPlaces
             ) : (
-              <div>
-                <div
-                  className="spinner-grow text-danger"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-warning"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-info"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
+              <div
+                className="spinner-border text-primary"
+                style={{ marginTop: "9rem", height: "9rem", width: "9rem" }}
+                role="status"
+              >
+                <span className="sr-only">Loading...</span>
               </div>
             )}
           </div>
@@ -723,28 +721,12 @@ class PlacesNearMe extends Component {
             {!this.state.loading && this.state.isPageShowable ? (
               this.nearPlaces1
             ) : (
-              <div>
-                <div
-                  className="spinner-grow text-danger"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-warning"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-info"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
+              <div
+                className="spinner-border text-primary"
+                style={{ marginTop: "9rem", height: "9rem", width: "9rem" }}
+                role="status"
+              >
+                <span className="sr-only">Loading...</span>
               </div>
             )}
           </div>
@@ -765,28 +747,12 @@ class PlacesNearMe extends Component {
             {!this.state.loading && this.state.isPageShowable ? (
               this.nearPlaces2
             ) : (
-              <div>
-                <div
-                  className="spinner-grow text-danger"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-warning"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-info"
-                  style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
+              <div
+                className="spinner-border text-primary"
+                style={{ marginTop: "9rem", height: "9rem", width: "9rem" }}
+                role="status"
+              >
+                <span className="sr-only">Loading...</span>
               </div>
             )}
           </div>
