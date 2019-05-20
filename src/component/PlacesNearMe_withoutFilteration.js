@@ -3,6 +3,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
 import "../App.css";
 import Script from "react-load-script";
+// import locationImage from "../images/Location.png";
 
 const API_KEY = "AIzaSyDuLv4aZRFP5S-wsuKbSpsuszzmdoTUmHo";
 
@@ -34,9 +35,7 @@ class PlacesNearMe extends Component {
       loading: true,
       locationErr: "",
       locOrCategoryChanged: true,
-      isPageShowable: false,
-      currentPlaceloading: false,
-      filterApplied: false
+      isPageShowable: false
     };
   }
 
@@ -145,8 +144,7 @@ class PlacesNearMe extends Component {
         currentPage: 1,
         nearPlaces: [],
         nearPlaces1: [],
-        nearPlaces2: [],
-        filterApplied: false
+        nearPlaces2: []
       });
     const nearPlaces = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
@@ -176,8 +174,7 @@ class PlacesNearMe extends Component {
       nextPageToken1: "",
       nextPageToken2: "",
       flag: "",
-      isPageShowable: false,
-      filterApplied: false
+      isPageShowable: false
     });
     const query = encodeURIComponent(this.state.query);
     console.log(query);
@@ -269,8 +266,7 @@ class PlacesNearMe extends Component {
     console.log("nextPageToken", nextPageToken);
     this.setState({
       currentPage: page,
-      locOrCategoryChanged: false,
-      filterApplied: false
+      locOrCategoryChanged: false
     });
     console.log(page);
     if (
@@ -335,8 +331,7 @@ class PlacesNearMe extends Component {
       nearPlaces2: [],
       currentPage: 1,
       loading: true,
-      isPageShowable: false,
-      filterApplied: false
+      isPageShowable: false
     });
     const currentLocation = this.state.currentLocation;
     const category = this.state.category
@@ -363,7 +358,6 @@ class PlacesNearMe extends Component {
 
   getDetailedPlace = place => {
     console.log(place.place_id);
-    this.setState({ currentPlaceloading: true });
     axios
       .get(
         `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?placeid=${
@@ -375,8 +369,7 @@ class PlacesNearMe extends Component {
         return this.setState({
           currentPlaceDetail: res,
           loading: false,
-          locOrCategoryChanged: false,
-          currentPlaceloading: false
+          locOrCategoryChanged: false
         });
       })
       .catch(err => console.log("Error in Finding Place Detail"));
@@ -499,58 +492,6 @@ class PlacesNearMe extends Component {
 
     console.log("done", answer);
     return answer;
-  };
-
-  handleFilter = (filterby, page) => {
-    if (filterby === "all") {
-      if (page === 1) {
-        console.log("page ", page, " ", "filter by ", filterby);
-        this.filteredPlaces = this.nearPlaces;
-        this.setState({ filterApplied: true });
-      } else if (page === 2) {
-        console.log("page ", page, " ", "filter by ", filterby);
-        this.filteredPlaces1 = this.nearPlaces1;
-      } else if (page === 3) {
-        console.log("page ", page, " ", "filter by ", filterby);
-        this.filteredPlaces2 = this.nearPlaces2;
-        this.setState({ filterApplied: true });
-      }
-    } else {
-      if (page === 1) {
-        var nearPlaces = this.state.nearPlaces;
-        console.log("page ", page, " ", "filter by ", filterby);
-        this.filteredPlaces = this.nearPlaces.filter((place, i) => {
-          return (
-            nearPlaces &&
-            nearPlaces[i].types &&
-            nearPlaces[i].types.includes(filterby)
-          );
-        });
-        this.setState({ filterApplied: true });
-      } else if (page === 2) {
-        console.log("page ", page, " ", "filter by ", filterby);
-        const nearPlaces = this.state.nearPlaces1;
-        this.filteredPlaces1 = this.nearPlaces1.filter((place, i) => {
-          return (
-            nearPlaces &&
-            nearPlaces[i].types &&
-            nearPlaces[i].types.includes(filterby)
-          );
-        });
-        this.setState({ filterApplied: true });
-      } else if (page === 3) {
-        console.log("page ", page, " ", "filter by ", filterby);
-        const nearPlaces = this.state.nearPlaces2;
-        this.filteredPlaces2 = this.nearPlaces2.filter((place, i) => {
-          return (
-            nearPlaces &&
-            nearPlaces[i].types &&
-            nearPlaces[i].types.includes(filterby)
-          );
-        });
-        this.setState({ filterApplied: true });
-      }
-    }
   };
 
   render() {
@@ -708,11 +649,7 @@ class PlacesNearMe extends Component {
                   if (this.state.currentPage > 1)
                     this.handleNextPage(this.state.currentPage - 1);
                 }}
-                style={{
-                  marginRight: "3rem",
-                  marginLeft: "-7rem",
-                  borderRadius: "20px"
-                }}
+                style={{ marginRight: "3rem", marginLeft: "-5rem" }}
                 disabled={this.state.currentPage === 1}
               >
                 Prev
@@ -728,141 +665,13 @@ class PlacesNearMe extends Component {
                   )
                     this.handleNextPage(this.state.currentPage + 1);
                 }}
-                style={{
-                  marginLeft: "3rem",
-                  marginRight: "-5rem",
-                  borderRadius: "20px"
-                }}
+                style={{ marginLeft: "3rem", marginRight: "-5rem" }}
                 disabled={this.state.currentPage === 3}
               >
                 Next
               </button>
             </div>
             <hr style={{ marginBottom: "2rem" }} />
-            {/* <div style={{ display: "flex", justifyContent: "center", flexWrap:'wrap' }}>
-              <button
-                className="btn btn-primary active"
-                style={{ margin: "2rem", borderRadius: "15px" }}
-                onClick={() => this.handleFilter("all", this.state.currentPage)}
-              >
-                {" "}
-                Show all
-              </button>
-              <button
-                className="btn btn-primary"
-                style={{ margin: "2rem", borderRadius: "15px" }}
-                onClick={() =>
-                  this.handleFilter("food", this.state.currentPage)
-                }
-              >
-                {" "}
-                Food
-              </button>
-              <button
-                className="btn btn-primary"
-                style={{ margin: "2rem", borderRadius: "15px" }}
-                onClick={() =>
-                  this.handleFilter("school", this.state.currentPage)
-                }
-              >
-                {" "}
-                School
-              </button>
-              <button
-                className="btn btn-primary"
-                style={{ margin: "2rem", borderRadius: "15px" }}
-                onClick={() =>
-                  this.handleFilter("health", this.state.currentPage)
-                }
-              >
-                {" "}
-                Health
-              </button>
-            </div> */}
-            <div
-              className="btn-group btn-group-toggle"
-              data-toggle="buttons"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                flexWrap: "wrap"
-              }}
-            >
-              <button
-                className="btn btn-outline-dark active"
-                onClick={() => this.handleFilter("all", this.state.currentPage)}
-                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
-              >
-                <input
-                  type="radio"
-                  name="options"
-                  id="option1"
-                  autoComplete="off"
-                  defaultChecked
-                />{" "}
-                All
-              </button>
-              <button
-                className="btn btn-outline-dark"
-                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
-                onClick={() =>
-                  this.handleFilter("food", this.state.currentPage)
-                }
-              >
-                <input
-                  type="radio"
-                  name="options"
-                  id="option2"
-                  autoComplete="off"
-                />{" "}
-                Food
-              </button>
-              <button
-                className="btn btn-outline-dark"
-                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
-                onClick={() =>
-                  this.handleFilter("store", this.state.currentPage)
-                }
-              >
-                <input
-                  type="radio"
-                  name="options"
-                  id="option5"
-                  autoComplete="off"
-                />{" "}
-                Store
-              </button>
-              <button
-                className="btn btn-outline-dark"
-                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
-                onClick={() =>
-                  this.handleFilter("school", this.state.currentPage)
-                }
-              >
-                <input
-                  type="radio"
-                  name="options"
-                  id="option3"
-                  autoComplete="off"
-                />{" "}
-                School
-              </button>
-              <button
-                className="btn btn-outline-dark"
-                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
-                onClick={() =>
-                  this.handleFilter("health", this.state.currentPage)
-                }
-              >
-                <input
-                  type="radio"
-                  name="options"
-                  id="option4"
-                  autoComplete="off"
-                />{" "}
-                Health
-              </button>
-            </div>
           </div>
         ) : (
           <div> </div>
@@ -876,11 +685,7 @@ class PlacesNearMe extends Component {
             }}
           >
             {!this.state.loading && this.state.isPageShowable ? (
-              this.state.filterApplied ? (
-                this.filteredPlaces
-              ) : (
-                this.nearPlaces
-              )
+              this.nearPlaces
             ) : (
               <div>
                 <div
@@ -898,7 +703,7 @@ class PlacesNearMe extends Component {
                   <span className="sr-only">Loading...</span>
                 </div>
                 <div
-                  className="spinner-grow text-dark"
+                  className="spinner-grow text-info"
                   style={{ marginTop: "9rem", height: "5rem", width: "5rem" }}
                   role="status"
                 >
@@ -922,11 +727,7 @@ class PlacesNearMe extends Component {
               <div>greater than 0</div>
             )} */}
             {!this.state.loading && this.state.isPageShowable ? (
-              this.state.filterApplied ? (
-                this.filteredPlaces1
-              ) : (
-                this.nearPlaces1
-              )
+              this.nearPlaces1
             ) : (
               <div>
                 <div
@@ -968,11 +769,7 @@ class PlacesNearMe extends Component {
               <div>greater than 0</div>
             )} */}
             {!this.state.loading && this.state.isPageShowable ? (
-              this.state.filterApplied ? (
-                this.filteredPlaces2
-              ) : (
-                this.nearPlaces2
-              )
+              this.nearPlaces2
             ) : (
               <div>
                 <div
@@ -1013,307 +810,151 @@ class PlacesNearMe extends Component {
             className="modal-dialog modal-dialog-centered modal-lg"
             role="document"
           >
-            {!this.state.currentPlaceloading ? (
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title" id="exampleModalLongTitle">
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result ? (
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLongTitle">
+                  {this.state.currentPlaceDetail !== null &&
+                  this.state.currentPlaceDetail.data.result ? (
+                    <span style={{ fontWeight: "bold" }}>
+                      {this.state.currentPlaceDetail.data.result.name}
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                </h5>
+                <button
+                  type="button"
+                  className="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <div>
+                  {" "}
+                  {this.state.currentPlaceDetail !== null &&
+                  this.state.currentPlaceDetail.data.result &&
+                  this.state.currentPlaceDetail.data.result
+                    .formatted_phone_number ? (
+                    <span>
                       <span style={{ fontWeight: "bold" }}>
-                        {this.state.currentPlaceDetail.data.result.name}
+                        Phone No:&nbsp;
                       </span>
-                    ) : (
-                      <span />
-                    )}
-                  </h5>
-                  <button
-                    type="button"
-                    className="close"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                  >
-                    <span aria-hidden="true">&times;</span>
-                  </button>
+                      {
+                        this.state.currentPlaceDetail.data.result
+                          .formatted_phone_number
+                      }
+                    </span>
+                  ) : (
+                    <span />
+                  )}
                 </div>
-                <div className="modal-body">
-                  <div>
-                    {" "}
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result &&
-                    this.state.currentPlaceDetail.data.result
-                      .formatted_phone_number ? (
-                      <span>
-                        <span style={{ fontWeight: "bold" }}>
-                          Phone No:&nbsp;
-                        </span>
-                        {
-                          this.state.currentPlaceDetail.data.result
-                            .formatted_phone_number
-                        }
+                <div>
+                  {" "}
+                  {this.state.currentPlaceDetail !== null &&
+                  this.state.currentPlaceDetail.data.result &&
+                  this.state.currentPlaceDetail.data.result
+                    .international_phone_number ? (
+                    <span>
+                      <span style={{ fontWeight: "bold" }}>
+                        International Phone No:&nbsp;
                       </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                  <div>
-                    {" "}
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result &&
-                    this.state.currentPlaceDetail.data.result
-                      .international_phone_number ? (
-                      <span>
-                        <span style={{ fontWeight: "bold" }}>
-                          International Phone No:&nbsp;
-                        </span>
-                        {
-                          this.state.currentPlaceDetail.data.result
-                            .international_phone_number
-                        }
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                  <div>
-                    {" "}
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result &&
-                    this.state.currentPlaceDetail.data.result.rating ? (
-                      <span>
-                        <span style={{ fontWeight: "bold" }}>
-                          Rating:&nbsp;
-                        </span>
-                        {this.state.currentPlaceDetail.data.result.rating}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                  <div>
-                    {" "}
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result &&
-                    this.state.currentPlaceDetail.data.result
-                      .formatted_address ? (
-                      <span>
-                        <span style={{ fontWeight: "bold" }}>
-                          Address:&nbsp;
-                        </span>
-                        {
-                          this.state.currentPlaceDetail.data.result
-                            .formatted_address
-                        }
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                  <div>
-                    {" "}
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result &&
-                    this.state.currentPlaceDetail.data.result.url ? (
-                      <div>
-                        <span style={{ fontWeight: "bold" }}>
-                          {" "}
-                          Location:&nbsp;{" "}
-                        </span>
-                        <a
-                          href={this.state.currentPlaceDetail.data.result.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Go To Google Map
-                        </a>
-                      </div>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                  <div>
-                    {" "}
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result &&
-                    this.state.currentPlaceDetail.data.result.website ? (
-                      <span>
-                        <span style={{ fontWeight: "bold" }}> Website </span>
-                        <a
-                          href={
-                            this.state.currentPlaceDetail.data.result.website
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {this.state.currentPlaceDetail.data.result.website}
-                        </a>
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                  <div>
-                    {" "}
-                    {this.state.currentPlaceDetail !== null &&
-                    this.state.currentPlaceDetail.data.result &&
-                    this.state.currentPlaceDetail.data.result.reviews ? (
-                      <div>
-                        <span>
-                          {" "}
-                          <div
-                            style={{
-                              fontWeight: "bold",
-                              fontSize: "1.5rem",
-                              marginBottom: "2rem",
-                              marginTop: "1rem",
-                              textAlign: "center"
-                            }}
-                          >
-                            <hr
-                              style={{
-                                borderColor: "rgb(50, 50, 51)",
-                                marginRight: "0.2rem",
-                                marginLeft: "0.2rem"
-                              }}
-                            />
-                            Reviews
-                            <hr
-                              style={{
-                                borderColor: "rgb(50, 50, 51)",
-                                marginRight: "0.2rem",
-                                marginLeft: "0.2rem"
-                              }}
-                            />
-                          </div>
-                          {this.state.currentPlaceDetail.data.result.reviews.map(
-                            (review, i) => {
-                              return (
-                                <div
-                                  key={i}
-                                  // style={{
-                                  //   display: "flex",
-                                  //   flexWrap: "wrap",
-                                  //   flexGrow: "initial"
-                                  // }}
-                                >
-                                  <span>
-                                    <a
-                                      href={review.author_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      <img
-                                        src={review.profile_photo_url}
-                                        alt={"P"}
-                                        style={{
-                                          height: "2rem",
-                                          width: "2rem"
-                                        }}
-                                      />
-                                      <span
-                                        style={{
-                                          marginRight: "0.5rem",
-                                          marginLeft: "0.5rem",
-                                          fontWeight: "bold"
-                                        }}
-                                      >
-                                        {review.author_name}
-                                      </span>
-                                    </a>
-                                    &nbsp;
-                                    <small>
-                                      <i>{review.relative_time_description}</i>
-                                    </small>
-                                    <span className="star">
-                                      <span className="fa fa-star checked">
-                                        {review.rating}
-                                      </span>
-                                    </span>
-                                  </span>
-                                  <span
-                                    style={{
-                                      marginTop: "0.2rem",
-                                      marginBottom: "0.7rem"
-                                    }}
-                                  >
-                                    <br />
-                                    <span>
-                                      &nbsp;&nbsp;&nbsp;&nbsp;{review.text}
-                                    </span>
-                                  </span>
-                                  <hr
-                                    style={{
-                                      borderColor: "silver",
-                                      marginRight: "0.2rem",
-                                      marginLeft: "0.2rem"
-                                    }}
-                                  />
-                                </div>
-                              );
-                            }
-                          )}
-                        </span>
-                      </div>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
+                      {
+                        this.state.currentPlaceDetail.data.result
+                          .international_phone_number
+                      }
+                    </span>
+                  ) : (
+                    <span />
+                  )}
                 </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-danger"
-                    data-dismiss="modal"
-                  >
-                    OK
-                  </button>
+                <div>
+                  {" "}
+                  {this.state.currentPlaceDetail !== null &&
+                  this.state.currentPlaceDetail.data.result &&
+                  this.state.currentPlaceDetail.data.result.rating ? (
+                    <span>
+                      <span style={{ fontWeight: "bold" }}>Rating:&nbsp;</span>
+                      {this.state.currentPlaceDetail.data.result.rating}
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                </div>
+                <div>
+                  {" "}
+                  {this.state.currentPlaceDetail !== null &&
+                  this.state.currentPlaceDetail.data.result &&
+                  this.state.currentPlaceDetail.data.result
+                    .formatted_address ? (
+                    <span>
+                      <span style={{ fontWeight: "bold" }}>Address:&nbsp;</span>
+                      {
+                        this.state.currentPlaceDetail.data.result
+                          .formatted_address
+                      }
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                </div>
+                <div>
+                  {" "}
+                  {this.state.currentPlaceDetail !== null &&
+                  this.state.currentPlaceDetail.data.result &&
+                  this.state.currentPlaceDetail.data.result.url ? (
+                    <div>
+                      <span style={{ fontWeight: "bold" }}>
+                        {" "}
+                        Google Map:&nbsp;{" "}
+                      </span>
+                      <a
+                        href={this.state.currentPlaceDetail.data.result.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Go To Google Map
+                      </a>
+                    </div>
+                  ) : (
+                    <span />
+                  )}
+                </div>
+                <div>
+                  {" "}
+                  {this.state.currentPlaceDetail !== null &&
+                  this.state.currentPlaceDetail.data.result &&
+                  this.state.currentPlaceDetail.data.result.website ? (
+                    <span>
+                      <span style={{ fontWeight: "bold" }}>
+                        {" "}
+                        Go to Website{" "}
+                      </span>
+                      <a
+                        href={this.state.currentPlaceDetail.data.result.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {this.state.currentPlaceDetail.data.result.website}
+                      </a>
+                    </span>
+                  ) : (
+                    <span />
+                  )}
                 </div>
               </div>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  flexWrap: "warp"
-                }}
-              >
-                <div
-                  className="spinner-grow text-danger"
-                  style={{
-                    marginTop: "9rem",
-                    height: "3rem",
-                    width: "3rem",
-                    marginLeft: "10rem"
-                  }}
-                  role="status"
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  data-dismiss="modal"
                 >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-warning"
-                  style={{
-                    marginTop: "9rem",
-                    height: "3rem",
-                    width: "3rem",
-                    marginLeft: "15rem"
-                  }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div
-                  className="spinner-grow text-info"
-                  style={{
-                    marginTop: "9rem",
-                    height: "3rem",
-                    width: "3rem",
-                    marginLeft: "15rem"
-                  }}
-                  role="status"
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
+                  OK
+                </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
