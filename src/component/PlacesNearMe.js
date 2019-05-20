@@ -510,6 +510,7 @@ class PlacesNearMe extends Component {
       } else if (page === 2) {
         console.log("page ", page, " ", "filter by ", filterby);
         this.filteredPlaces1 = this.nearPlaces1;
+        this.setState({ filterApplied: true });
       } else if (page === 3) {
         console.log("page ", page, " ", "filter by ", filterby);
         this.filteredPlaces2 = this.nearPlaces2;
