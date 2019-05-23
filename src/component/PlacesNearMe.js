@@ -681,8 +681,7 @@ class PlacesNearMe extends Component {
         })
       );
       return { answer };
-    }
-    else if (flag === "rRating") {
+    } else if (flag === "rRating") {
       answer = nearPlaces;
       console.log(
         "Rating Star",
@@ -889,7 +888,7 @@ class PlacesNearMe extends Component {
               "linear-gradient(to right, rgb(115, 182, 226) , rgb(148, 145, 242))",
             borderRadius: "10px",
             alignItems: "center",
-            padding:'0.5rem'
+            padding: "0.5rem"
           }}
         >
           <h2
@@ -898,7 +897,7 @@ class PlacesNearMe extends Component {
               fontSize: "2.5rem",
               marginTop: "1rem",
               marginBottom: "2rem",
-              color:'rgb(1, 41, 68)'
+              color: "rgb(1, 41, 68)"
             }}
           >
             <b>NearBy Search</b>
