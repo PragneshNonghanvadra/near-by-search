@@ -3,7 +3,6 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
 import "../App.css";
 import Script from "react-load-script";
-import StarRatings from "react-star-ratings";
 
 const API_KEY = "AIzaSyDuLv4aZRFP5S-wsuKbSpsuszzmdoTUmHo";
 
@@ -37,9 +36,7 @@ class PlacesNearMe extends Component {
       locOrCategoryChanged: true,
       isPageShowable: false,
       currentPlaceloading: false,
-      filterApplied: false,
-      sortingApplied: false,
-      sortValue: "--------"
+      filterApplied: false
     };
   }
 
@@ -55,8 +52,7 @@ class PlacesNearMe extends Component {
       nearPlaces2: [],
       currentPage: 1,
       loading: true,
-      category: "",
-      sortingApplied: false
+      category: ""
     });
     // console.log("current Location");
     var currentLocation = {};
@@ -150,10 +146,7 @@ class PlacesNearMe extends Component {
         nearPlaces: [],
         nearPlaces1: [],
         nearPlaces2: [],
-        filterApplied: false,
-        sortingApplied: false,
-        filterValue: "All",
-        sortValue: "--------"
+        filterApplied: false
       });
     const nearPlaces = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
@@ -184,10 +177,7 @@ class PlacesNearMe extends Component {
       nextPageToken2: "",
       flag: "",
       isPageShowable: false,
-      filterApplied: false,
-      sortingApplied: false,
-      sortValue: "--------",
-      filterValue: "All"
+      filterApplied: false
     });
     const query = encodeURIComponent(this.state.query);
     console.log(query);
@@ -262,6 +252,7 @@ class PlacesNearMe extends Component {
         });
       }
       console.log("Token", nearPlaces.data.next_page_token);
+      // console.log(nearPlaces.data.results);
       if (nearPlaces.data.results.length === 0) console.log("No Near Places");
       // else {
       //   console.log(nearPlaces.data.results[0].photos[0].photo_reference);
@@ -279,10 +270,7 @@ class PlacesNearMe extends Component {
     this.setState({
       currentPage: page,
       locOrCategoryChanged: false,
-      filterApplied: false,
-      sortingApplied: false,
-      sortValue: "--------",
-      filterValue: "All"
+      filterApplied: false
     });
     console.log(page);
     if (
@@ -348,10 +336,7 @@ class PlacesNearMe extends Component {
       currentPage: 1,
       loading: true,
       isPageShowable: false,
-      filterApplied: false,
-      sortingApplied: false,
-      sortValue: "--------",
-      filterValue: "All"
+      filterApplied: false
     });
     const currentLocation = this.state.currentLocation;
     const category = this.state.category
@@ -445,292 +430,75 @@ class PlacesNearMe extends Component {
     }
   };
 
-  getPlacesComponents = async (nearPlaces, flag) => {
+  getPlacesComponents = async nearPlaces => {
     console.log("call to getPlacesComponents", nearPlaces);
     // this.setState({ isPageShowable: false });
-    if (flag === "initial") {
-      const locArray = await nearPlaces.map(place => {
-        return `${place.geometry.location.lat}%2C${
-          place.geometry.location.lng
-        }`;
+    const locArray = await nearPlaces.map(place => {
+      return `${place.geometry.location.lat}%2C${place.geometry.location.lng}`;
+    });
+    console.log("locArray", locArray);
+    const res = await axios.get(
+      `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
+        this.state.currentLocation.lat
+      }%2C${this.state.currentLocation.lng}&destinations=${locArray.join(
+        "%7C"
+      )}&key=${API_KEY}`
+    );
+    var distArray;
+    if (res.data && res.data.rows[0] && res.data.rows[0].elements) {
+      distArray = await res.data.rows[0].elements.map(data => {
+        return data.distance.text;
       });
-      console.log("locArray", locArray);
-      const res = await axios.get(
-        `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
-          this.state.currentLocation.lat
-        }%2C${this.state.currentLocation.lng}&destinations=${locArray.join(
-          "%7C"
-        )}&key=${API_KEY}`
-      );
-      var distArray;
-      if (res.data && res.data.rows[0] && res.data.rows[0].elements) {
-        distArray = await res.data.rows[0].elements.map(data => {
-          if (data.distance && data.distance.text) return data.distance.text;
-          else return "Not Available";
-        });
-      }
-      var types = [];
-      var answer = await nearPlaces.map((place, i) => {
-        // const dist = await axios.get(
-        //   `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
-        //     this.state.currentLocation.lat
-        //   },${this.state.currentLocation.lng}&destinations=${
-        //     place.geometry.location.lat
-        //   },${place.geometry.location.lng}&key=${API_KEY}`
-        // );
-
-        // console.log("dist", dist);
-        types = types.concat(place.types);
-
-        return (
-          <div
-            key={i}
-            onClick={() => this.getDetailedPlace(place)}
-            data-toggle="modal"
-            data-target="#exampleModalCenter"
-            className="place"
-          >
-            <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
-              <img src={place.icon} alt={"No icon Available"} />
-            </div>
-            <div>
-              <span>{place.name}</span>
-            </div>
-            <div style={{ marginTop: "1rem" }}>
-              <span>
-                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
-                {/* {dist.data.rows[0].elements[0].distance.text} */}
-                {distArray[i]}
-              </span>
-            </div>
-            <div style={{ marginTop: "0.4rem" }}>
-              <span>
-                {typeof place.rating !== "undefined" ? (
-                  <span>
-                    <b>{place.rating}</b>
-                    {" : "}
-                    <StarRatings
-                      rating={place.rating}
-                      starRatedColor="gold"
-                      numberOfStars={5}
-                      name="rating"
-                      starDimension="1.5rem"
-                      starSpacing="0.1rem"
-                    />{" "}
-                  </span>
-                ) : (
-                  <span>
-                    <b>0</b>
-                    {" : "}
-                    <StarRatings
-                      rating={0}
-                      starRatedColor="gold"
-                      numberOfStars={5}
-                      name="rating"
-                      starDimension="1.5rem"
-                      starSpacing="0.1rem"
-                    />{" "}
-                  </span>
-                )}
-              </span>
-            </div>
-          </div>
-        );
-      });
-      // if (this.nearPlaces.length > 0) {
-      //   Promise.all(this.nearPlaces).then(values => {
-      //     this.nearPlaces = values;
-      //     this.setState({ isPageShowable: true, locOrCategoryChanged: false });
-      //     console.log("values", values);
-
-      //     console.log("this.nearPlace", this.nearPlaces);
-      //   });
-      // }
-
-      // console.log("this.nearPlace", this.nearPlaces, this.state.isPageShowable);
-
-      // console.log(
-      //   "done",
-      //   answer.map(place => {
-      //     return place.props.children[2].props.children.props.children[2];
-      //   })
+    }
+    const answer = await nearPlaces.map((place, i) => {
+      // const dist = await axios.get(
+      //   `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/distancematrix/json?origins=${
+      //     this.state.currentLocation.lat
+      //   },${this.state.currentLocation.lng}&destinations=${
+      //     place.geometry.location.lat
+      //   },${place.geometry.location.lng}&key=${API_KEY}`
       // );
-      console.log("done", answer);
-      types = types.filter((value, index, self) => {
-        return self.indexOf(value) === index;
-      });
-      console.log("types", types);
 
-      return { answer, types };
-    } else if (flag === "Sorting") {
-      answer = nearPlaces;
-      console.log(
-        "Sorting ",
-        answer.sort((a, b) => {
-          var tempa = a;
-          var tempb = b;
-          if (
-            tempa.props.children[2].props.children.props.children[2].split(
-              " "
-            )[1] === "km"
-          )
-            tempa =
-              Number(
-                tempa.props.children[2].props.children.props.children[2].split(
-                  " "
-                )[0]
-              ) * 1000;
-          else
-            tempa = Number(
-              tempa.props.children[2].props.children.props.children[2].split(
-                " "
-              )[0]
-            );
+      // console.log("dist", dist);
 
-          if (
-            tempb.props.children[2].props.children.props.children[2].split(
-              " "
-            )[1] === "km"
-          )
-            tempb =
-              Number(
-                tempb.props.children[2].props.children.props.children[2].split(
-                  " "
-                )[0]
-              ) * 1000;
-          else
-            tempb = Number(
-              tempb.props.children[2].props.children.props.children[2].split(
-                " "
-              )[0]
-            );
-
-          return tempa > tempb ? 1 : -1;
-        })
+      return (
+        <div
+          key={i}
+          onClick={() => this.getDetailedPlace(place)}
+          data-toggle="modal"
+          data-target="#exampleModalCenter"
+          className="place"
+        >
+          <div style={{ marginTop: "-3rem", marginBottom: "1rem" }}>
+            <img src={place.icon} alt={"No icon Available"} />
+          </div>
+          <div>
+            <span>{place.name}</span>
+          </div>
+          <div style={{ marginTop: "1.5rem" }}>
+            <span>
+              <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />{" "}
+              {/* {dist.data.rows[0].elements[0].distance.text} */}
+              {distArray[i]}
+            </span>
+          </div>
+        </div>
       );
-      return { answer };
-    } else if (flag === "rSorting") {
-      answer = nearPlaces;
-      console.log(
-        "rSorting",
-        answer.sort((a, b) => {
-          var tempa = a;
-          var tempb = b;
-          if (
-            tempa.props.children[2].props.children.props.children[2].split(
-              " "
-            )[1] === "km"
-          )
-            tempa =
-              Number(
-                tempa.props.children[2].props.children.props.children[2].split(
-                  " "
-                )[0]
-              ) * 1000;
-          else
-            tempa = Number(
-              tempa.props.children[2].props.children.props.children[2].split(
-                " "
-              )[0]
-            );
+    });
+    // if (this.nearPlaces.length > 0) {
+    //   Promise.all(this.nearPlaces).then(values => {
+    //     this.nearPlaces = values;
+    //     this.setState({ isPageShowable: true, locOrCategoryChanged: false });
+    //     console.log("values", values);
 
-          if (
-            tempb.props.children[2].props.children.props.children[2].split(
-              " "
-            )[1] === "km"
-          )
-            tempb =
-              Number(
-                tempb.props.children[2].props.children.props.children[2].split(
-                  " "
-                )[0]
-              ) * 1000;
-          else
-            tempb = Number(
-              tempb.props.children[2].props.children.props.children[2].split(
-                " "
-              )[0]
-            );
+    //     console.log("this.nearPlace", this.nearPlaces);
+    //   });
+    // }
 
-          return tempa < tempb ? 1 : -1;
-        })
-      );
-      return { answer };
-    } else if (flag === "Rating") {
-      answer = nearPlaces;
-      console.log(
-        "Rating Star",
-        nearPlaces.map(place => {
-          return place.props.children[3].props.children.props.children.props
-            .children[0].props.children;
-        })
-      );
-      console.log(
-        "Rating",
-        answer.sort((a, b) => {
-          var tempa = Number(
-            a.props.children[3].props.children.props.children.props.children[0]
-              .props.children
-          );
-          var tempb = Number(
-            b.props.children[3].props.children.props.children.props.children[0]
-              .props.children
-          );
+    // console.log("this.nearPlace", this.nearPlaces, this.state.isPageShowable);
 
-          return tempa > tempb ? 1 : -1;
-        })
-      );
-      return { answer };
-    }
-    else if (flag === "rRating") {
-      answer = nearPlaces;
-      console.log(
-        "Rating Star",
-        nearPlaces.map(place => {
-          return place.props.children[3].props.children.props.children.props
-            .children[0].props.children;
-        })
-      );
-      console.log(
-        "Rating",
-        answer.sort((a, b) => {
-          var tempa = Number(
-            a.props.children[3].props.children.props.children.props.children[0]
-              .props.children
-          );
-          var tempb = Number(
-            b.props.children[3].props.children.props.children.props.children[0]
-              .props.children
-          );
-
-          return tempa < tempb ? 1 : -1;
-        })
-      );
-      return { answer };
-    }
-  };
-
-  filterBar = () => {
-    var types;
-    if (this.state.currentPage === 1) types = this.placeTypes;
-    else if (this.state.currentPage === 2) types = this.placeTypes1;
-    else if (this.state.currentPage === 3) types = this.placeTypes2;
-    console.log("filterBar", types);
-    if (types) {
-      const ans = types.map((typeName, i) => {
-        return (
-          <option
-            style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
-            onClick={() => this.handleFilter(typeName, this.state.currentPage)}
-            key={i}
-          >
-            {typeName}
-          </option>
-        );
-      });
-      console.log(ans);
-      return ans;
-    } else return <option />;
+    console.log("done", answer);
+    return answer;
   };
 
   handleFilter = (filterby, page) => {
@@ -738,111 +506,51 @@ class PlacesNearMe extends Component {
       if (page === 1) {
         console.log("page ", page, " ", "filter by ", filterby);
         this.filteredPlaces = this.nearPlaces;
-        this.setState({ filterApplied: true, filterValue: "All" });
+        this.setState({ filterApplied: true });
       } else if (page === 2) {
         console.log("page ", page, " ", "filter by ", filterby);
         this.filteredPlaces1 = this.nearPlaces1;
-        this.setState({ filterApplied: true, filterValue: "All" });
+        this.setState({ filterApplied: true });
       } else if (page === 3) {
         console.log("page ", page, " ", "filter by ", filterby);
         this.filteredPlaces2 = this.nearPlaces2;
-        this.setState({ filterApplied: true, filterValue: "All" });
+        this.setState({ filterApplied: true });
       }
     } else {
       if (page === 1) {
-        let nearPlaces = this.state.nearPlaces;
+        var nearPlaces = this.state.nearPlaces;
         console.log("page ", page, " ", "filter by ", filterby);
-        let places = this.nearPlaces;
-        // if (this.state.filterApplied) places = this.filteredPlaces;
-        this.filteredPlaces = places.filter(place => {
+        this.filteredPlaces = this.nearPlaces.filter((place, i) => {
           return (
             nearPlaces &&
-            nearPlaces[Number(place.key)].types &&
-            nearPlaces[Number(place.key)].types.includes(filterby)
+            nearPlaces[i].types &&
+            nearPlaces[i].types.includes(filterby)
           );
         });
-        this.setState({ filterApplied: true, filterValue: filterby });
+        this.setState({ filterApplied: true });
       } else if (page === 2) {
         console.log("page ", page, " ", "filter by ", filterby);
-        let nearPlaces = this.state.nearPlaces1;
-        let places = this.nearPlaces1;
-        // if (this.state.filterApplied) places = this.filteredPlaces1;
-        this.filteredPlaces1 = places.filter(place => {
+        const nearPlaces = this.state.nearPlaces1;
+        this.filteredPlaces1 = this.nearPlaces1.filter((place, i) => {
           return (
             nearPlaces &&
-            nearPlaces[Number(place.key)].types &&
-            nearPlaces[Number(place.key)].types.includes(filterby)
+            nearPlaces[i].types &&
+            nearPlaces[i].types.includes(filterby)
           );
         });
-        this.setState({ filterApplied: true, filterValue: filterby });
+        this.setState({ filterApplied: true });
       } else if (page === 3) {
         console.log("page ", page, " ", "filter by ", filterby);
-        let nearPlaces = this.state.nearPlaces2;
-        let places = this.nearPlaces2;
-        // if (this.state.filterApplied) places = this.filteredPlaces2;
-        this.filteredPlaces2 = places.filter(place => {
+        const nearPlaces = this.state.nearPlaces2;
+        this.filteredPlaces2 = this.nearPlaces2.filter((place, i) => {
           return (
             nearPlaces &&
-            nearPlaces[Number(place.key)].types &&
-            nearPlaces[Number(place.key)].types.includes(filterby)
+            nearPlaces[i].types &&
+            nearPlaces[i].types.includes(filterby)
           );
         });
-        this.setState({ filterApplied: true, filterValue: filterby });
+        this.setState({ filterApplied: true });
       }
-    }
-  };
-
-  handleSorting = flag => {
-    console.log("flag", flag);
-    if (this.state.currentPage === 1) {
-      let nearPlaces = this.nearPlaces;
-
-      if (this.state.filterApplied) {
-        this.getPlacesComponents(nearPlaces, flag).then(res => {
-          console.log("Sorting Res O ", res);
-          this.nearPlaces = res.answer;
-        });
-        nearPlaces = this.filteredPlaces;
-      }
-
-      this.getPlacesComponents(nearPlaces, flag).then(res => {
-        console.log("Sorting Res ", res);
-        if (this.state.filterApplied) this.filteredPlaces = res.answer;
-        else this.nearPlaces = res.answer;
-        this.setState({ sortingApplied: true, sortValue: flag });
-      });
-    } else if (this.state.currentPage === 2) {
-      let nearPlaces = this.nearPlaces1;
-      if (this.state.filterApplied) {
-        this.getPlacesComponents(nearPlaces, flag).then(res => {
-          console.log("Sorting Res O ", res);
-          this.nearPlaces1 = res.answer;
-        });
-        nearPlaces = this.filteredPlaces1;
-      }
-
-      this.getPlacesComponents(nearPlaces, flag).then(res => {
-        console.log("Sorting Res ", res);
-        if (this.state.filterApplied) this.filteredPlaces1 = res.answer;
-        else this.nearPlaces1 = res.answer;
-        this.setState({ sortingApplied: true, sortValue: flag });
-      });
-    } else if (this.state.currentPage === 3) {
-      let nearPlaces = this.nearPlaces2;
-      if (this.state.filterApplied) {
-        this.getPlacesComponents(nearPlaces, flag).then(res => {
-          console.log("Sorting Res O ", res);
-          this.nearPlaces2 = res.answer;
-        });
-        nearPlaces = this.filteredPlaces2;
-      }
-
-      this.getPlacesComponents(nearPlaces, flag).then(res => {
-        console.log("Sorting Res ", res);
-        if (this.state.filterApplied) this.filteredPlaces2 = res.answer;
-        else this.nearPlaces2 = res.answer;
-        this.setState({ sortingApplied: true, sortValue: flag });
-      });
     }
   };
 
@@ -853,9 +561,8 @@ class PlacesNearMe extends Component {
       this.state.nearPlaces.length > 0
     ) {
       console.log("First Render", this.state.nearPlaces.length);
-      this.getPlacesComponents(this.state.nearPlaces, "initial").then(res => {
-        this.nearPlaces = res.answer;
-        if (res.types) this.placeTypes = res.types;
+      this.getPlacesComponents(this.state.nearPlaces).then(res => {
+        this.nearPlaces = res;
         this.setState({ isPageShowable: true, locOrCategoryChanged: false });
       });
     }
@@ -864,9 +571,8 @@ class PlacesNearMe extends Component {
       this.state.locOrCategoryChanged &&
       this.state.nearPlaces1.length > 0
     ) {
-      this.getPlacesComponents(this.state.nearPlaces1, "initial").then(res => {
-        this.nearPlaces1 = res.answer;
-        if (res.types) this.placeTypes1 = res.types;
+      this.getPlacesComponents(this.state.nearPlaces1).then(res => {
+        this.nearPlaces1 = res;
         this.setState({ isPageShowable: true, locOrCategoryChanged: false });
       });
     }
@@ -875,55 +581,34 @@ class PlacesNearMe extends Component {
       this.state.locOrCategoryChanged &&
       this.state.nearPlaces2.length > 0
     ) {
-      this.getPlacesComponents(this.state.nearPlaces2, "initial").then(res => {
-        this.nearPlaces2 = res.answer;
-        if (res.types) this.placeTypes2 = res.types;
+      this.getPlacesComponents(this.state.nearPlaces2).then(res => {
+        this.nearPlaces2 = res;
         this.setState({ isPageShowable: true, locOrCategoryChanged: false });
       });
     }
     return (
       <div>
-        <div
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, rgb(115, 182, 226) , rgb(148, 145, 242))",
-            borderRadius: "10px",
-            alignItems: "center",
-            padding:'0.5rem'
-          }}
+        <h3
+          style={{ textAlign: "center", fontSize: "3.5rem", marginTop: "1rem" }}
         >
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "2.5rem",
-              marginTop: "1rem",
-              marginBottom: "2rem",
-              color:'rgb(1, 41, 68)'
-            }}
-          >
-            <b>NearBy Search</b>
-          </h2>
-          <Script
-            url={`https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`}
-            onLoad={this.handleScriptLoad}
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center"
-            }}
-          >
-            <abbr title="Set Current Location">
-              <button
-                style={{
-                  margin: "2rem",
-                  marginRight: "-2rem",
-                  marginTop: "1rem"
-                }}
-                className="btn btn-primary"
-                onClick={this.getCurrentLocation}
-              >
-                {/* <img
+          NearBy Search
+        </h3>
+        <Script
+          url={`https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`}
+          onLoad={this.handleScriptLoad}
+        />
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <abbr title="Set Current Location">
+            <button
+              style={{
+                margin: "2rem",
+                marginRight: "-2rem",
+                marginTop: "2rem"
+              }}
+              className="btn btn-primary"
+              onClick={this.getCurrentLocation}
+            >
+              {/* <img
                 src={locationImage}
                 height="26rem"
                 width="26rem"
@@ -935,74 +620,57 @@ class PlacesNearMe extends Component {
                 }}
                 className="location-img"
               /> */}
-                <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />
-              </button>
-            </abbr>
-            <input
-              type="text"
-              id="autocomplete"
-              className="form-control"
-              onChange={e => this.setState({ query: e.target.value })}
-              placeholder="Search Places.."
-              style={{
-                width: "50rem",
-                margin: "2rem",
-                marginBottom: "-1rem",
-                marginTop: "1rem"
-              }}
-              value={this.state.query}
-              onFocus={e => e.target.select()}
-            />
+              <i className="fa fa-map-marker fa-1x icon" aria-hidden="true" />
+            </button>
+          </abbr>
+          <input
+            type="text"
+            id="autocomplete"
+            className="form-control"
+            onChange={e => this.setState({ query: e.target.value })}
+            placeholder="Search Places.."
+            style={{ width: "50rem", margin: "2rem" }}
+            value={this.state.query}
+            onFocus={e => e.target.select()}
+          />
 
-            <button
-              className="btn btn-primary"
-              style={{
-                margin: "2rem",
-                marginLeft: "-2rem",
-                marginTop: "1rem"
-              }}
-              onClick={this.handleRequestByName}
-              disabled={this.state.query.length === 0}
-            >
-              <i className="fa fa-location-arrow" aria-hidden="true" />
-            </button>
-          </div>
-          <form
-            onSubmit={this.handleRequestByCategory}
-            style={{ display: "flex", justifyContent: "center" }}
+          <button
+            className="btn btn-primary"
+            style={{
+              margin: "2rem",
+              marginLeft: "-2rem"
+            }}
+            onClick={this.handleRequestByName}
+            disabled={this.state.query.length === 0}
           >
-            <input
-              type="text"
-              className="form-control"
-              onChange={e => this.setState({ category: e.target.value })}
-              placeholder="Search category..(eg: Food, Restaurant)"
-              style={{
-                width: "50rem",
-                margin: "2rem",
-                marginTop: "-1rem",
-                marginBottom: "1rem"
-              }}
-              onFocus={e => e.target.select()}
-              value={this.state.category}
-            />
-            <button
-              className="btn btn-primary"
-              style={{
-                margin: "2rem",
-                marginLeft: "-2rem",
-                marginTop: "-1rem",
-                marginBottom: "1rem"
-              }}
-              disabled={this.state.category.length === 0}
-            >
-              {" "}
-              <i className="fa fa-search" />{" "}
-            </button>
-          </form>
+            <i className="fa fa-location-arrow fa-1x" aria-hidden="true" />
+          </button>
         </div>
+        <form
+          onSubmit={this.handleRequestByCategory}
+          style={{ display: "flex", justifyContent: "center" }}
+        >
+          <input
+            type="text"
+            className="form-control"
+            onChange={e => this.setState({ category: e.target.value })}
+            placeholder="Search category..(eg: Food, Restaurant)"
+            style={{ width: "50rem", margin: "2rem" }}
+            onFocus={e => e.target.select()}
+            value={this.state.category}
+          />
+          <button
+            className="btn btn-primary"
+            style={{ margin: "2rem", marginLeft: "-2rem" }}
+            disabled={this.state.category.length === 0}
+          >
+            {" "}
+            <i className="fa fa-search" />{" "}
+          </button>
+        </form>
         {this.state.nearPlaces.length !== 0 ? (
           <div>
-            <hr style={{ marginTop: "0.8rem" }} />
+            <hr style={{ marginTop: "2rem" }} />
             <div
               style={{
                 display: "flex",
@@ -1043,13 +711,12 @@ class PlacesNearMe extends Component {
                 }}
                 style={{
                   marginRight: "3rem",
-                  marginLeft: "-5rem",
+                  marginLeft: "-7rem",
                   borderRadius: "20px"
                 }}
                 disabled={this.state.currentPage === 1}
               >
-                <i className="arrow left" />
-                &nbsp; Prev
+                Prev
               </button>
               <button
                 className="btn btn-light"
@@ -1069,10 +736,10 @@ class PlacesNearMe extends Component {
                 }}
                 disabled={this.state.currentPage === 3}
               >
-                Next &nbsp; <i className="arrow right" />
+                Next
               </button>
             </div>
-            <hr style={{ marginBottom: "1rem" }} />
+            <hr style={{ marginBottom: "2rem" }} />
             {/* <div style={{ display: "flex", justifyContent: "center", flexWrap:'wrap' }}>
               <button
                 className="btn btn-primary active"
@@ -1113,7 +780,7 @@ class PlacesNearMe extends Component {
                 Health
               </button>
             </div> */}
-            {/* <div
+            <div
               className="btn-group btn-group-toggle"
               data-toggle="buttons"
               style={{
@@ -1125,134 +792,77 @@ class PlacesNearMe extends Component {
               <button
                 className="btn btn-outline-dark active"
                 onClick={() => this.handleFilter("all", this.state.currentPage)}
-                style={{ margin: "1rem", borderRadius: "15px" }}
+                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
               >
                 <input
                   type="radio"
                   name="options"
                   id="option1"
                   autoComplete="off"
+                  defaultChecked
                 />{" "}
                 All
               </button>
-              {this.filterBar()}
-            </div> */}
-            <div
-            // style={{
-            //   display: "flex",
-            //   flexWrap: "wrap",
-            //   justifyContent: "center"
-            // }}
-            >
-              {/* <ul
-                style={{ display: "flex", flexWrap: "wrap" }}
+              <button
+                className="btn btn-outline-dark"
+                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
+                onClick={() =>
+                  this.handleFilter("food", this.state.currentPage)
+                }
               >
-                <li
-                  style={{
-                    margin: "1rem",
-                    borderRadius: "15px",
-                    width: "5rem"
-                  }}
-                  onClick={() =>
-                    this.handleFilter("all", this.state.currentPage)
-                  }
-                >
-                  All
-                </li>
-                {this.filterBar()}
-              </ul> */}
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "center"
-                  }}
-                >
-                  <div style={{ flex: "1" }}>
-                    <div
-                      style={{
-                        marginRight: "2%",
-                        marginLeft: "10%",
-                        marginBottom: "1.5rem"
-                      }}
-                    >
-                      <label>
-                        <b>Filter By</b>&nbsp;&nbsp;&nbsp;&nbsp;
-                      </label>
-                      <div>
-                        <select
-                          className="form-control"
-                          value={this.state.filterValue}
-                          onChange={e =>
-                            this.handleFilter(
-                              e.target.value,
-                              this.state.currentPage
-                            )
-                          }
-                        >
-                          <option value="all">All</option>
-                          {this.filterBar()}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ flex: "1" }}>
-                    <div
-                      style={{
-                        marginRight: "10%",
-                        marginLeft: "2%"
-                      }}
-                    >
-                      <label
-                      // className="control-label col-sm-offset-2 col-sm-2"
-                      // htmlFor="sorting"
-                      >
-                        <b>Sort By</b>&nbsp;&nbsp;&nbsp;&nbsp;
-                      </label>
-                      <div
-                      // className="col-sm-4 col-md-4"
-                      >
-                        <select
-                          value={this.state.sortValue}
-                          className="form-control"
-                          onChange={e => {
-                            if (e.target.value !== "none")
-                              this.handleSorting(e.target.value);
-                          }}
-                        >
-                          <option value="none"> ------------ </option>
-                          <option value="Rating">Rating Assending</option>
-                          <option value="rRating">Rating Desending</option>
-                          <option value="Sorting">Distance Assending</option>
-                          <option value="rSorting">Distance Desending</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* <button
-                onClick={() => {
-                  this.handleSorting("Sorting");
-                }}
-              >
-                asc
+                <input
+                  type="radio"
+                  name="options"
+                  id="option2"
+                  autoComplete="off"
+                />{" "}
+                Food
               </button>
               <button
-                onClick={() => {
-                  this.handleSorting("rSorting");
-                }}
+                className="btn btn-outline-dark"
+                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
+                onClick={() =>
+                  this.handleFilter("store", this.state.currentPage)
+                }
               >
-                des
+                <input
+                  type="radio"
+                  name="options"
+                  id="option5"
+                  autoComplete="off"
+                />{" "}
+                Store
               </button>
               <button
-                onClick={() => {
-                  this.handleSorting("Rating");
-                }}
+                className="btn btn-outline-dark"
+                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
+                onClick={() =>
+                  this.handleFilter("school", this.state.currentPage)
+                }
               >
-                Rat
-              </button> */}
+                <input
+                  type="radio"
+                  name="options"
+                  id="option3"
+                  autoComplete="off"
+                />{" "}
+                School
+              </button>
+              <button
+                className="btn btn-outline-dark"
+                style={{ margin: "1rem", borderRadius: "15px", width: "5rem" }}
+                onClick={() =>
+                  this.handleFilter("health", this.state.currentPage)
+                }
+              >
+                <input
+                  type="radio"
+                  name="options"
+                  id="option4"
+                  autoComplete="off"
+                />{" "}
+                Health
+              </button>
             </div>
           </div>
         ) : (
@@ -1614,22 +1224,10 @@ class PlacesNearMe extends Component {
                                     <small>
                                       <i>{review.relative_time_description}</i>
                                     </small>
-                                    <span
-                                      style={{
-                                        color: "gold",
-                                        marginLeft: "0.3rem"
-                                      }}
-                                    >
-                                      {" "}
-                                      <b>{review.rating}: </b>
-                                      <StarRatings
-                                        rating={review.rating}
-                                        starRatedColor="gold"
-                                        numberOfStars={5}
-                                        name="rating"
-                                        starDimension="1rem"
-                                        starSpacing="0.05rem"
-                                      />{" "}
+                                    <span className="star">
+                                      <span className="fa fa-star checked">
+                                        {review.rating}
+                                      </span>
                                     </span>
                                   </span>
                                   <span

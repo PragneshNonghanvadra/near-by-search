@@ -10,6 +10,7 @@
     "react-geolocated": "^2.4.1",
     "react-load-script": "0.0.6",
     "react-scripts": "3.0.0",
+    "react-star-ratings": "^2.3.0",
     "serve": "^11.0.0"
   },
   "scripts": {
@@ -34,6 +35,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "proxy": "https://maps.googleapis.com"
+  }
 }
